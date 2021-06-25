@@ -11,11 +11,11 @@ Click 'Authorize Shipica to Communicate with Amazon' button in oxWebApp
 
 Azure Function SellerAuthCallback.LWACallback receives callback from amazon (i am doing this in a Function so that i dont have to map it back to oxWebApp. that requires javascript and 
  an unfamiliar process. i know how to do an api in a Function)
-1. update sp_api_credentials for most recent selling_partner_id (selling_partner_id, mws_auth_token, spapi_oauth_code)
+1. update sp_api_credentials for most recent selling_partner_id (selling_partner_id, mws_auth_token, spapi_oauth_code, auth_updated_date)
  optional. this will let us know that we got the callback . mws_auth_token is the old token you are using now. maybe we can use it to map if selling_partner_id does not work
 2. call LWA authorization server (https://api.amazon.com/auth/o2/token) to get a refresh token
  i need the client_id and client_secret here. they are part of your LWA creds. do you have them?
-3. update sp_api_credentials for selling_partner_id (lwa_refresh_token, auth_updated_date)
+3. update sp_api_credentials for selling_partner_id (lwa_refresh_token, lwa_refresh_token_date)
  now we have refresh_token. i think thats all we need for this flow
  
 refresh_token (LWA Refresh Token) is long lived. cant find an explicit reference, but i think it lasts forever. every time you want to call the SP API,
@@ -32,3 +32,15 @@ CREATE TABLE sp_api_credentials (
   auth_granted_date,
   lwa_refresh_token_date
 );
+
+
+
+oxWebApp
+SetSpAuthRequested(customer_ident) -- will set auth_requested_date = GETDATE()
+
+LWACallback
+GetSpAuthCustomerId() gets customer_ident with most recent auth_requested_date (must be within the last 10 minutes)
+SetSpAuthGranted(customer_ident, selling_partner_id, mws_auth_token, spapi_oauth_code) -- will set auth_granted_date = GETDATE()
+
+call amazon to exchange spapi_oauth_code for lwa_refresh_token
+SetSpRefreshToken(customer_ident, lwa_refresh_token) -- will set lwa_refresh_token_date = GETDATE()
