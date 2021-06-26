@@ -82,7 +82,8 @@ namespace SellerAuthCallback
             string responseMessage = string.Empty;
             //responseMessage = $"selling_partner_id: {selling_partner_id}, mws_auth_token: {mws_auth_token}, spapi_oauth_code: {spapi_oauth_code}";
             //log.LogInformation(responseMessage);
-            return new OkObjectResult(responseMessage);
+            //return new OkObjectResult(responseMessage);
+            return new RedirectResult("https://oxwebapptest.azurewebsites.net");
         }
 
         private static async Task<LWAAuthResponse> GetRefreshToken(ILogger log, string spapi_oauth_code)
